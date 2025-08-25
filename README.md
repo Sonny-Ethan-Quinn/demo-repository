@@ -1,4 +1,4 @@
-# SEQ Token - Secure DeFi Token for Base Blockchain
+# Welcome to your organization's demo respository
 
 This repository contains the **SEQ Token** - a secure ERC-20 token implementation designed specifically to prevent honeypot vulnerabilities commonly found on the Base blockchain.
 
