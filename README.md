@@ -14,6 +14,18 @@ The SEQ token has been designed with security as the top priority, implementing 
 - ✅ **Transparent Functions**: Built-in verification functions for security status
 - ✅ **Decentralization Path**: Clear path to full decentralization via ownership renouncement
 
+## 🚀 ICO Features
+
+The SEQICO contract provides a secure Initial Coin Offering (ICO) implementation with multiple payment options:
+
+- 💰 **Multi-Currency Support**: Accept ETH, USDT, and USDC payments
+- 🔒 **Secure Price Management**: Owner-controlled pricing with transparent calculations
+- 💸 **Automatic Refunds**: Excess ETH automatically refunded to buyers
+- 📊 **Event Logging**: All purchases logged for transparency
+- 🛡️ **Input Validation**: Comprehensive checks for amounts, balances, and approvals
+- 👥 **Owner Controls**: Secure withdrawal functions for collected funds
+- 🔐 **Integration Security**: Seamless integration with secure SEQ token
+
 ## 🚀 Quick Start
 
 ### Installation
@@ -54,17 +66,31 @@ npx hardhat test
 
 ### Deploy to Base Network
 ```bash
+# Deploy SEQ Token
 npx hardhat run scripts/deploy.js --network base
+
+# Deploy ICO Contract
+npx hardhat run scripts/deploy-ico.js --network base
+```
+
+### ICO Security Verification
+```bash
+./verify-ico-security.sh
 ```
 
 ## 📁 Repository Structure
 
 - `contracts/SEQToken.sol` - Main secure token contract
+- `contracts/SEQICO.sol` - Secure ICO contract for token sales
+- `contracts/MockTokens.sol` - Mock USDT/USDC tokens for testing
 - `contracts/MaliciousReentrancy.sol` - Test contract for reentrancy protection
 - `test/SEQToken.test.js` - Comprehensive security test suite
-- `scripts/deploy.js` - Deployment script with security verification
+- `test/SEQICO.test.js` - ICO functionality test suite
+- `scripts/deploy.js` - SEQ Token deployment script
+- `scripts/deploy-ico.js` - ICO deployment script with security verification
 - `SECURITY.md` - Detailed security documentation
 - `verify-security.sh` - Automated security verification tool
+- `verify-ico-security.sh` - ICO security verification tool
 
 ## 🛡️ Security Verification
 
@@ -85,6 +111,8 @@ This function analyzes the current state of the contract and provides transparen
 ## 📖 Documentation
 
 For detailed security analysis and implementation details, see [SECURITY.md](SECURITY.md).
+
+For ICO contract details and usage instructions, see [SEQICO.md](SEQICO.md).
 
 ## ⚠️ Important Security Notice
 
