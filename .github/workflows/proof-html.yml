@@ -6,6 +6,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses:  anishathalye/proof-html@<commit-sha>
+      - uses: anishathalye/proof-html@c8e53e4d5b3b9a4c9b1b7a4b7e9f9a7d8e6a1c2e
         with:
           directory: ./
