@@ -4,25 +4,35 @@ const { ethers } = require("hardhat");
 describe("SEQToken Security Tests", function () {
   let SEQToken;
   let token;
+  let deployer;
   let owner;
+  let ico;
   let addr1;
   let addr2;
   let addrs;
 
   beforeEach(async function () {
     SEQToken = await ethers.getContractFactory("SEQToken");
-    [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
+    [deployer, owner, ico, addr1, addr2, ...addrs] = await ethers.getSigners();
     
-    // Deploy with 100 million initial supply
-    const initialSupply = ethers.parseEther("100000000");
-    token = await SEQToken.deploy(initialSupply);
+    // Deploy with 100 million total supply, distributed 10% to owner, 90% to ico
+    const totalSupply = ethers.parseEther("100000000");
+    token = await SEQToken.deploy(totalSupply, owner.address, ico.address);
   });
 
   describe("Deployment", function () {
-    it("Should deploy with correct initial supply", async function () {
-      const initialSupply = ethers.parseEther("100000000");
-      expect(await token.totalSupply()).to.equal(initialSupply);
-      expect(await token.balanceOf(owner.address)).to.equal(initialSupply);
+    it("Should deploy with correct total supply and distribution", async function () {
+      const totalSupply = ethers.parseEther("100000000");
+      const expectedOwnerAmount = ethers.parseEther("10000000"); // 10%
+      const expectedIcoAmount = ethers.parseEther("90000000");   // 90%
+      
+      expect(await token.totalSupply()).to.equal(totalSupply);
+      expect(await token.balanceOf(owner.address)).to.equal(expectedOwnerAmount);
+      expect(await token.balanceOf(ico.address)).to.equal(expectedIcoAmount);
+    });
+
+    it("Should set correct owner", async function () {
+      expect(await token.owner()).to.equal(owner.address);
     });
 
     it("Should have correct token details", async function () {
@@ -35,14 +45,35 @@ describe("SEQToken Security Tests", function () {
       const maxSupply = ethers.parseEther("1000000000"); // 1 billion
       expect(await token.MAX_SUPPLY()).to.equal(maxSupply);
     });
+
+    it("Should reject deployment with zero addresses", async function () {
+      const totalSupply = ethers.parseEther("100000000");
+      
+      await expect(
+        SEQToken.deploy(totalSupply, ethers.ZeroAddress, ico.address)
+      ).to.be.revertedWith("Owner address cannot be zero");
+      
+      await expect(
+        SEQToken.deploy(totalSupply, owner.address, ethers.ZeroAddress)
+      ).to.be.revertedWith("ICO address cannot be zero");
+    });
+
+    it("Should reject deployment with supply exceeding max", async function () {
+      const maxSupply = await token.MAX_SUPPLY();
+      const excessiveSupply = maxSupply + 1n;
+      
+      await expect(
+        SEQToken.deploy(excessiveSupply, owner.address, ico.address)
+      ).to.be.revertedWith("Total supply exceeds maximum");
+    });
   });
 
   describe("Honeypot Prevention Tests", function () {
     it("Should allow normal transfers without restrictions", async function () {
       const amount = ethers.parseEther("1000");
       
-      // Transfer from owner to addr1
-      await token.transfer(addr1.address, amount);
+      // Transfer from owner to addr1 (owner has 10% of tokens)
+      await token.connect(owner).transfer(addr1.address, amount);
       expect(await token.balanceOf(addr1.address)).to.equal(amount);
       
       // Transfer from addr1 to addr2
@@ -60,17 +91,17 @@ describe("SEQToken Security Tests", function () {
       // Check transfer tax is 0
       expect(await token.getTransferTax()).to.equal(0);
       
-      // Actual transfer should send full amount
-      await token.transfer(addr1.address, amount);
+      // Actual transfer should send full amount (owner has tokens)
+      await token.connect(owner).transfer(addr1.address, amount);
       expect(await token.balanceOf(addr1.address)).to.equal(amount);
     });
 
     it("Should allow anyone to transfer (no blacklisting)", async function () {
       const amount = ethers.parseEther("1000");
       
-      // Send tokens to multiple addresses
-      await token.transfer(addr1.address, amount);
-      await token.transfer(addr2.address, amount);
+      // Send tokens to multiple addresses (owner has tokens)
+      await token.connect(owner).transfer(addr1.address, amount);
+      await token.connect(owner).transfer(addr2.address, amount);
       
       // All addresses should be able to transfer
       expect(await token.canTransfer(addr1.address)).to.be.true;
@@ -87,13 +118,13 @@ describe("SEQToken Security Tests", function () {
       const currentSupply = await token.totalSupply();
       const remainingSupply = maxSupply - currentSupply;
       
-      // Should be able to mint up to max supply
-      await token.mint(addr1.address, remainingSupply);
+      // Should be able to mint up to max supply (by owner)
+      await token.connect(owner).mint(addr1.address, remainingSupply);
       expect(await token.totalSupply()).to.equal(maxSupply);
       
       // Should not be able to mint more
       await expect(
-        token.mint(addr1.address, 1)
+        token.connect(owner).mint(addr1.address, 1)
       ).to.be.revertedWith("Would exceed maximum supply");
     });
   });
@@ -101,7 +132,7 @@ describe("SEQToken Security Tests", function () {
   describe("Minting Controls", function () {
     it("Should allow owner to mint tokens initially", async function () {
       const amount = ethers.parseEther("1000");
-      await token.mint(addr1.address, amount);
+      await token.connect(owner).mint(addr1.address, amount);
       expect(await token.balanceOf(addr1.address)).to.equal(amount);
     });
 
@@ -115,17 +146,17 @@ describe("SEQToken Security Tests", function () {
     it("Should permanently disable minting when requested", async function () {
       const amount = ethers.parseEther("1000");
       
-      // Initially should be able to mint
-      await token.mint(addr1.address, amount);
+      // Initially should be able to mint (by owner)
+      await token.connect(owner).mint(addr1.address, amount);
       expect(await token.mintingDisabled()).to.be.false;
       
-      // Disable minting
-      await token.disableMinting();
+      // Disable minting (by owner)
+      await token.connect(owner).disableMinting();
       expect(await token.mintingDisabled()).to.be.true;
       
       // Should no longer be able to mint
       await expect(
-        token.mint(addr1.address, amount)
+        token.connect(owner).mint(addr1.address, amount)
       ).to.be.revertedWith("Minting has been permanently disabled");
     });
 
@@ -140,7 +171,7 @@ describe("SEQToken Security Tests", function () {
     it("Should allow owner to renounce ownership", async function () {
       expect(await token.owner()).to.equal(owner.address);
       
-      await token.renounceOwnership();
+      await token.connect(owner).renounceOwnership();
       
       expect(await token.owner()).to.equal(ethers.ZeroAddress);
     });
@@ -148,12 +179,12 @@ describe("SEQToken Security Tests", function () {
     it("Should not allow minting after ownership is renounced", async function () {
       const amount = ethers.parseEther("1000");
       
-      // Renounce ownership
-      await token.renounceOwnership();
+      // Renounce ownership (by owner)
+      await token.connect(owner).renounceOwnership();
       
-      // Should not be able to mint anymore
+      // Should not be able to mint anymore (no owner)
       await expect(
-        token.mint(addr1.address, amount)
+        token.connect(owner).mint(addr1.address, amount)
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });
   });
@@ -165,14 +196,14 @@ describe("SEQToken Security Tests", function () {
       expect(isSecure).to.be.false;
       expect(reason).to.contain("Owner can still mint tokens");
       
-      // After disabling minting, more secure
-      await token.disableMinting();
+      // After disabling minting, more secure (by owner)
+      await token.connect(owner).disableMinting();
       [isSecure, reason] = await token.verifyNotHoneypot();
       expect(isSecure).to.be.true;
       expect(reason).to.contain("Minting disabled");
       
-      // After renouncing ownership, fully secure
-      await token.renounceOwnership();
+      // After renouncing ownership, fully secure (by owner)
+      await token.connect(owner).renounceOwnership();
       [isSecure, reason] = await token.verifyNotHoneypot();
       expect(isSecure).to.be.true;
       expect(reason).to.contain("fully decentralized");
@@ -185,8 +216,8 @@ describe("SEQToken Security Tests", function () {
       const MaliciousContract = await ethers.getContractFactory("MaliciousReentrancy");
       const malicious = await MaliciousContract.deploy(await token.getAddress());
       
-      // Send tokens to malicious contract
-      await token.transfer(await malicious.getAddress(), amount);
+      // Send tokens to malicious contract (owner has tokens)
+      await token.connect(owner).transfer(await malicious.getAddress(), amount);
       
       // The malicious contract should not be able to perform reentrancy
       // This test passes if no revert occurs from reentrancy guard
@@ -198,12 +229,12 @@ describe("SEQToken Security Tests", function () {
     it("Should handle transfers with reentrancy protection", async function () {
       const amount = ethers.parseEther("1000");
       
-      // Normal transfers should work
-      await token.transfer(addr1.address, amount);
+      // Normal transfers should work (owner has tokens)
+      await token.connect(owner).transfer(addr1.address, amount);
       expect(await token.balanceOf(addr1.address)).to.equal(amount);
       
       // transferFrom should also work
-      await token.approve(addr1.address, amount);
+      await token.connect(owner).approve(addr1.address, amount);
       await token.connect(addr1).transferFrom(owner.address, addr2.address, amount);
       expect(await token.balanceOf(addr2.address)).to.equal(amount);
     });
@@ -211,15 +242,14 @@ describe("SEQToken Security Tests", function () {
 
   describe("Edge Cases", function () {
     it("Should handle zero transfers", async function () {
-      await expect(token.transfer(addr1.address, 0)).to.not.be.reverted;
+      await expect(token.connect(owner).transfer(addr1.address, 0)).to.not.be.reverted;
     });
 
     it("Should handle max supply exactly", async function () {
       const maxSupply = await token.MAX_SUPPLY();
-      const currentSupply = await token.totalSupply();
       
       // Should be able to deploy with max supply
-      const maxToken = await SEQToken.deploy(maxSupply);
+      const maxToken = await SEQToken.deploy(maxSupply, owner.address, ico.address);
       expect(await maxToken.totalSupply()).to.equal(maxSupply);
     });
 
@@ -228,23 +258,8 @@ describe("SEQToken Security Tests", function () {
       const excessiveSupply = maxSupply + 1n;
       
       await expect(
-        SEQToken.deploy(excessiveSupply)
-      ).to.be.revertedWith("Initial supply exceeds maximum");
+        SEQToken.deploy(excessiveSupply, owner.address, ico.address)
+      ).to.be.revertedWith("Total supply exceeds maximum");
     });
   });
 });
-
-// Helper contract for reentrancy testing
-contract MaliciousReentrancy {
-    SEQToken public token;
-    
-    constructor(address _token) {
-        token = SEQToken(_token);
-    }
-    
-    // This contract doesn't actually attempt reentrancy since our token is protected
-    // But it's here to demonstrate that the protection exists
-    function attemptReentrancy() external {
-        // Would try to call transfer again, but reentrancy guard prevents it
-    }
-}
