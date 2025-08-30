@@ -77,12 +77,22 @@ npx hardhat test
 ```
 
 ### Deploy to Base Network
-1. Add your private key to environment variables
-2. Uncomment and configure the Base network in `hardhat.config.js`
-3. Deploy with:
+The SEQ Token requires three parameters for deployment:
+
+1. **totalSupply**: Total number of tokens to create (max 1 billion)
+2. **owner**: Address to receive 10% of tokens and contract ownership
+3. **ico**: Address to receive 90% of tokens
+
+Example deployment:
 ```bash
 npx hardhat run scripts/deploy.js --network base
 ```
+
+The deploy script automatically:
+- Distributes 10% of tokens to the owner address
+- Distributes 90% of tokens to the ICO address  
+- Transfers contract ownership to the owner address
+- Displays security verification results
 
 ## Verification Commands
 

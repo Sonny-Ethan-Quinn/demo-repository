@@ -21,6 +21,22 @@ The SEQ token has been designed with security as the top priority, implementing 
 npm install
 ```
 
+### Token Deployment
+The SEQ Token uses a three-parameter constructor for secure distribution:
+
+```solidity
+constructor(
+    uint256 totalSupply,  // Total tokens to create
+    address owner,        // Receives 10% of tokens + ownership
+    address ico          // Receives 90% of tokens
+)
+```
+
+**Distribution:**
+- 10% of tokens go to the owner address
+- 90% of tokens go to the ICO address
+- Contract ownership is transferred to the owner address
+
 ### Security Verification
 ```bash
 ./verify-security.sh
