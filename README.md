@@ -96,6 +96,8 @@ This function analyzes the current state of the contract and provides transparen
 
 For detailed security analysis and implementation details, see [SECURITY.md](SECURITY.md).
 
+For ICO contract details and usage instructions, see [SEQICO.md](SEQICO.md).
+
 ## ⚠️ Important Security Notice
 
 Always verify smart contracts on block explorers before interacting with them. This implementation prioritizes transparency and user safety over advanced features.
