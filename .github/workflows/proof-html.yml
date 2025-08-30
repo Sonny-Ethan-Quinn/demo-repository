@@ -6,6 +6,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: anishathalye/proof-html@c8e53e4d5b3b9a4c9b1b7a4b7e9f9a7d8e6a1c2e
+    - uses: anishathalye/proof-html@b8ed9e9f2e4d4c1f6a3be19a83278e24ea7f8d56
         with:
-          directory: ./
+          directory: demo-repository/.github/workflows/proof-html.yml
