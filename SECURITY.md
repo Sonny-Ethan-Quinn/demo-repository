@@ -61,6 +61,10 @@ This repository contains the secure SEQ token implementation designed to prevent
 
 ## Deployment Instructions
 
+**Owner and ICO recipient wallet address example:**
+- Owner: `0xf6b6F31737f8c42ebA6Ed06E624F08aC5a4e0FC0`
+- ICO recipient: `0xf6b6F31737f8c42ebA6Ed06E624F08aC5a4e0FC0`
+
 ### Prerequisites
 ```bash
 npm install
@@ -79,7 +83,16 @@ npx hardhat test
 ### Deploy to Base Network
 1. Add your private key to environment variables
 2. Uncomment and configure the Base network in `hardhat.config.js`
-3. Deploy with:
+3. Update the deployment script to use your address as the owner/ICO recipient if required:
+
+```javascript
+// Example usage in scripts/deploy.js
+const owner = "0xf6b6F31737f8c42ebA6Ed06E624F08aC5a4e0FC0";
+const ico = "0xf6b6F31737f8c42ebA6Ed06E624F08aC5a4e0FC0";
+const seqToken = await SEQToken.deploy(initialSupply, owner, ico);
+```
+
+4. Deploy with:
 ```bash
 npx hardhat run scripts/deploy.js --network base
 ```
