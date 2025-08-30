@@ -33,6 +33,22 @@ The SEQICO contract provides a secure Initial Coin Offering (ICO) implementation
 npm install
 ```
 
+### Token Deployment
+The SEQ Token uses a three-parameter constructor for secure distribution:
+
+```solidity
+constructor(
+    uint256 totalSupply,  // Total tokens to create
+    address owner,        // Receives 10% of tokens + ownership
+    address ico          // Receives 90% of tokens
+)
+```
+
+**Distribution:**
+- 10% of tokens go to the owner address
+- 90% of tokens go to the ICO address
+- Contract ownership is transferred to the owner address
+
 ### Security Verification
 ```bash
 ./verify-security.sh
