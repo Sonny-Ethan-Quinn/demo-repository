@@ -16,15 +16,15 @@ describe("SEQToken Security Tests", function () {
     [deployer, owner, ico, addr1, addr2, ...addrs] = await ethers.getSigners();
     
     // Deploy with 100 million total supply, distributed 10% to owner, 90% to ico
-    const totalSupply = ethers.parseEther("100000000");
+    const totalSupply = ethers.utils.parseEther("100000000");
     token = await SEQToken.deploy(totalSupply, owner.address, ico.address);
   });
 
   describe("Deployment", function () {
     it("Should deploy with correct total supply and distribution", async function () {
-      const totalSupply = ethers.parseEther("100000000");
-      const expectedOwnerAmount = ethers.parseEther("10000000"); // 10%
-      const expectedIcoAmount = ethers.parseEther("90000000");   // 90%
+      const totalSupply = ethers.utils.parseEther("100000000");
+      const expectedOwnerAmount = ethers.utils.parseEther("10000000"); // 10%
+      const expectedIcoAmount = ethers.utils.parseEther("90000000");   // 90%
       
       expect(await token.totalSupply()).to.equal(totalSupply);
       expect(await token.balanceOf(owner.address)).to.equal(expectedOwnerAmount);
@@ -42,19 +42,19 @@ describe("SEQToken Security Tests", function () {
     });
 
     it("Should set max supply correctly", async function () {
-      const maxSupply = ethers.parseEther("1000000000"); // 1 billion
+      const maxSupply = ethers.utils.parseEther("1000000000"); // 1 billion
       expect(await token.MAX_SUPPLY()).to.equal(maxSupply);
     });
 
     it("Should reject deployment with zero addresses", async function () {
-      const totalSupply = ethers.parseEther("100000000");
+      const totalSupply = ethers.utils.parseEther("100000000");
       
       await expect(
-        SEQToken.deploy(totalSupply, ethers.ZeroAddress, ico.address)
+        SEQToken.deploy(totalSupply, ethers.constants.AddressZero, ico.address)
       ).to.be.revertedWith("Owner address cannot be zero");
       
       await expect(
-        SEQToken.deploy(totalSupply, owner.address, ethers.ZeroAddress)
+        SEQToken.deploy(totalSupply, owner.address, ethers.constants.AddressZero)
       ).to.be.revertedWith("ICO address cannot be zero");
     });
 
@@ -70,7 +70,7 @@ describe("SEQToken Security Tests", function () {
 
   describe("Honeypot Prevention Tests", function () {
     it("Should allow normal transfers without restrictions", async function () {
-      const amount = ethers.parseEther("1000");
+      const amount = ethers.utils.parseEther("1000");
       
       // Transfer from owner to addr1 (owner has 10% of tokens)
       await token.connect(owner).transfer(addr1.address, amount);
@@ -83,7 +83,7 @@ describe("SEQToken Security Tests", function () {
     });
 
     it("Should not have any transfer fees or taxes", async function () {
-      const amount = ethers.parseEther("1000");
+      const amount = ethers.utils.parseEther("1000");
       
       // Check getTransferAmount returns full amount
       expect(await token.getTransferAmount(amount)).to.equal(amount);
@@ -97,7 +97,7 @@ describe("SEQToken Security Tests", function () {
     });
 
     it("Should allow anyone to transfer (no blacklisting)", async function () {
-      const amount = ethers.parseEther("1000");
+      const amount = ethers.utils.parseEther("1000");
       
       // Send tokens to multiple addresses (owner has tokens)
       await token.connect(owner).transfer(addr1.address, amount);
@@ -116,7 +116,7 @@ describe("SEQToken Security Tests", function () {
     it("Should not allow minting beyond max supply", async function () {
       const maxSupply = await token.MAX_SUPPLY();
       const currentSupply = await token.totalSupply();
-      const remainingSupply = maxSupply - currentSupply;
+      const remainingSupply = maxSupply.sub(currentSupply);
       
       // Should be able to mint up to max supply (by owner)
       await token.connect(owner).mint(addr1.address, remainingSupply);
@@ -131,20 +131,20 @@ describe("SEQToken Security Tests", function () {
 
   describe("Minting Controls", function () {
     it("Should allow owner to mint tokens initially", async function () {
-      const amount = ethers.parseEther("1000");
+      const amount = ethers.utils.parseEther("1000");
       await token.connect(owner).mint(addr1.address, amount);
       expect(await token.balanceOf(addr1.address)).to.equal(amount);
     });
 
     it("Should not allow non-owner to mint tokens", async function () {
-      const amount = ethers.parseEther("1000");
+      const amount = ethers.utils.parseEther("1000");
       await expect(
         token.connect(addr1).mint(addr1.address, amount)
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });
 
     it("Should permanently disable minting when requested", async function () {
-      const amount = ethers.parseEther("1000");
+      const amount = ethers.utils.parseEther("1000");
       
       // Initially should be able to mint (by owner)
       await token.connect(owner).mint(addr1.address, amount);
@@ -173,11 +173,11 @@ describe("SEQToken Security Tests", function () {
       
       await token.connect(owner).renounceOwnership();
       
-      expect(await token.owner()).to.equal(ethers.ZeroAddress);
+      expect(await token.owner()).to.equal(ethers.constants.AddressZero);
     });
 
     it("Should not allow minting after ownership is renounced", async function () {
-      const amount = ethers.parseEther("1000");
+      const amount = ethers.utils.parseEther("1000");
       
       // Renounce ownership (by owner)
       await token.connect(owner).renounceOwnership();
@@ -210,24 +210,24 @@ describe("SEQToken Security Tests", function () {
     });
 
     it("Should protect against reentrancy attacks", async function () {
-      const amount = ethers.parseEther("1000");
+      const amount = ethers.utils.parseEther("1000");
       
       // Deploy a malicious contract that attempts reentrancy
       const MaliciousContract = await ethers.getContractFactory("MaliciousReentrancy");
-      const malicious = await MaliciousContract.deploy(await token.getAddress());
+      const malicious = await MaliciousContract.deploy(token.address);
       
       // Send tokens to malicious contract (owner has tokens)
-      await token.connect(owner).transfer(await malicious.getAddress(), amount);
+      await token.connect(owner).transfer(malicious.address, amount);
       
       // The malicious contract should not be able to perform reentrancy
       // This test passes if no revert occurs from reentrancy guard
-      expect(await token.balanceOf(await malicious.getAddress())).to.equal(amount);
+      expect(await token.balanceOf(malicious.address)).to.equal(amount);
     });
   });
 
   describe("Transfer Functions", function () {
     it("Should handle transfers with reentrancy protection", async function () {
-      const amount = ethers.parseEther("1000");
+      const amount = ethers.utils.parseEther("1000");
       
       // Normal transfers should work (owner has tokens)
       await token.connect(owner).transfer(addr1.address, amount);
