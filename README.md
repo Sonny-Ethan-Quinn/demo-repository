@@ -18,6 +18,14 @@ The SEQ token has been designed with security as the top priority, implementing 
 
 The SEQICO contract provides a secure Initial Coin Offering (ICO) implementation with multiple payment options:
 
+### 💎 ICO Pricing Information
+- **Token Price**: $2.78 per SEQ token
+- **Total Supply**: 750,000 SEQ tokens
+- **ICO Allocation**: 675,000 SEQ tokens (90% of total supply)
+- **Owner Allocation**: 75,000 SEQ tokens (10% of total supply)
+- **Total ICO Value**: $1,876,500
+
+### 🛡️ Security Features
 - 💰 **Multi-Currency Support**: Accept ETH, USDT, and USDC payments
 - 🔒 **Secure Price Management**: Owner-controlled pricing with transparent calculations
 - 💸 **Automatic Refunds**: Excess ETH automatically refunded to buyers
@@ -66,12 +74,22 @@ npx hardhat test
 
 ### Deploy to Base Network
 ```bash
-# Deploy SEQ Token
+# Deploy SEQ Token with ICO configuration
+# - Total Supply: 750,000 SEQ tokens
+# - ICO Price: $2.78 per SEQ token
+# - Owner/ICO Address: 0xC217804689327649D4Fd89C9a269395084728BEF
 npx hardhat run scripts/deploy.js --network base
 
-# Deploy ICO Contract
+# Deploy ICO Contract (optional - for automated sales)
 npx hardhat run scripts/deploy-ico.js --network base
 ```
+
+**Current Deployment Configuration:**
+- **Total Supply**: 750,000 SEQ tokens  
+- **ICO Token Price**: $2.78 per SEQ token
+- **Distribution**: 75,000 SEQ to owner (10%), 675,000 SEQ for ICO (90%)
+- **Owner/ICO Address**: `0xC217804689327649D4Fd89C9a269395084728BEF`
+- **Total ICO Value**: $1,876,500
 
 ### ICO Security Verification
 ```bash
