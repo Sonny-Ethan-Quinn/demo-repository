@@ -19,7 +19,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
  */
 contract SEQToken is ERC20, Ownable, ReentrancyGuard {
     // Maximum supply is fixed and cannot be changed
-    uint256 public constant MAX_SUPPLY = 1_000_000_000 * 10**18; // 1 billion tokens
+    uint256 public constant MAX_SUPPLY = 750_000 * 10**18; // 750,000 tokens
     
     // Flag to indicate if minting is permanently disabled
     bool public mintingDisabled = false;
