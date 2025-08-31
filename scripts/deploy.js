@@ -41,8 +41,10 @@ async function main() {
   console.log(`✅ Token Name: ${tokenName}`);
   console.log(`✅ Token Symbol: ${tokenSymbol}`);
   console.log(`✅ Total Supply: ${ethers.utils.formatEther(deployedTotalSupply)} SEQ`);
-  console.log(`✅ Owner Balance: ${ethers.utils.formatEther(ownerBalance)} SEQ (${ownerBalance.mul(100).div(deployedTotalSupply).toString()}%)`);
-  console.log(`✅ ICO Balance: ${ethers.utils.formatEther(icoBalance)} SEQ (${icoBalance.mul(100).div(deployedTotalSupply).toString()}%)`);
+  const ownerPct = (parseFloat(ethers.utils.formatEther(ownerBalance)) / parseFloat(ethers.utils.formatEther(deployedTotalSupply)) * 100).toFixed(2);
+  const icoPct = (parseFloat(ethers.utils.formatEther(icoBalance)) / parseFloat(ethers.utils.formatEther(deployedTotalSupply)) * 100).toFixed(2);
+  console.log(`✅ Owner Balance: ${ethers.utils.formatEther(ownerBalance)} SEQ (${ownerPct}%)`);
+  console.log(`✅ ICO Balance: ${ethers.utils.formatEther(icoBalance)} SEQ (${icoPct}%)`);
   console.log(`✅ Contract Owner: ${contractOwner}`);
 
   // Security status check
