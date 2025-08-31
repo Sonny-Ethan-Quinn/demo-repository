@@ -15,16 +15,16 @@ describe("SEQToken Security Tests", function () {
     SEQToken = await ethers.getContractFactory("SEQToken");
     [deployer, owner, ico, addr1, addr2, ...addrs] = await ethers.getSigners();
     
-    // Deploy with 100 million total supply, distributed 10% to owner, 90% to ico
-    const totalSupply = ethers.utils.parseEther("100000000");
+    // Deploy with 750,000 total supply, distributed 10% to owner, 90% to ico
+    const totalSupply = ethers.utils.parseEther("750000");
     token = await SEQToken.deploy(totalSupply, owner.address, ico.address);
   });
 
   describe("Deployment", function () {
     it("Should deploy with correct total supply and distribution", async function () {
-      const totalSupply = ethers.utils.parseEther("100000000");
-      const expectedOwnerAmount = ethers.utils.parseEther("10000000"); // 10%
-      const expectedIcoAmount = ethers.utils.parseEther("90000000");   // 90%
+      const totalSupply = ethers.utils.parseEther("750000");
+      const expectedOwnerAmount = ethers.utils.parseEther("75000"); // 10%
+      const expectedIcoAmount = ethers.utils.parseEther("675000");   // 90%
       
       expect(await token.totalSupply()).to.equal(totalSupply);
       expect(await token.balanceOf(owner.address)).to.equal(expectedOwnerAmount);
@@ -47,7 +47,7 @@ describe("SEQToken Security Tests", function () {
     });
 
     it("Should reject deployment with zero addresses", async function () {
-      const totalSupply = ethers.utils.parseEther("100000000");
+      const totalSupply = ethers.utils.parseEther("750000");
       
       await expect(
         SEQToken.deploy(totalSupply, ethers.constants.AddressZero, ico.address)
