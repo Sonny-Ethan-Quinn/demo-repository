@@ -1,6 +1,11 @@
 node_modules
 .env
 
+# Python files
+__pycache__/
+*.py[cod]
+*$py.class
+
 # Hardhat files
 /cache
 /artifacts
