@@ -13,9 +13,16 @@ async function main() {
 
   console.log("Estimating deployment gas costs...");
   
+  // Get a valid address for estimation
+  const [deployer] = await ethers.getSigners();
+  
   // Estimate deployment gas
   const seqTokenDeployGas = await SEQToken.signer.estimateGas(
-    SEQToken.getDeployTransaction(ethers.utils.parseEther("1000000"))
+    SEQToken.getDeployTransaction(
+      ethers.utils.parseEther("1000000"), // totalSupply
+      deployer.address,                   // owner 
+      deployer.address                    // ico 
+    )
   );
   console.log(`SEQ Token deployment: ~${seqTokenDeployGas.toString()} gas`);
 
@@ -25,9 +32,9 @@ async function main() {
   // For SEQICO, we need to provide constructor parameters
   const seqicoDeployGas = await SEQICO.signer.estimateGas(
     SEQICO.getDeployTransaction(
-      ethers.constants.AddressZero, // seqToken (placeholder)
-      ethers.constants.AddressZero, // usdt (placeholder)
-      ethers.constants.AddressZero, // usdc (placeholder)
+      deployer.address, // seqToken 
+      deployer.address, // usdt 
+      deployer.address, // usdc 
       ethers.utils.parseEther("0.001"), // ETH price
       ethers.utils.parseEther("1"), // USDT price
       ethers.utils.parseEther("1")  // USDC price
