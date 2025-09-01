@@ -37,7 +37,7 @@ contract SEQICO is Ownable {
 
     function buyWithETH(uint256 tokenAmount) external payable {
         require(tokenAmount > 0, "Amount must be greater than 0");
-        uint256 requiredETH = pricePerTokenETH * tokenAmount;
+        uint256 requiredETH = pricePerTokenETH * tokenAmount / 1e18;
         require(msg.value >= requiredETH, "Insufficient ETH sent");
         require(seqToken.balanceOf(address(this)) >= tokenAmount, "Not enough SEQ tokens");
 
@@ -53,7 +53,7 @@ contract SEQICO is Ownable {
 
     function buyWithUSDT(uint256 tokenAmount) external {
         require(tokenAmount > 0, "Amount must be greater than 0");
-        uint256 requiredUSDT = pricePerTokenUSDT * tokenAmount / 1e18;
+        uint256 requiredUSDT = pricePerTokenUSDT * tokenAmount / 1e18 / 1e12; // Convert to 6 decimals
         require(seqToken.balanceOf(address(this)) >= tokenAmount, "Not enough SEQ tokens");
         require(usdt.allowance(msg.sender, address(this)) >= requiredUSDT, "Approve USDT first");
 
@@ -65,7 +65,7 @@ contract SEQICO is Ownable {
 
     function buyWithUSDC(uint256 tokenAmount) external {
         require(tokenAmount > 0, "Amount must be greater than 0");
-        uint256 requiredUSDC = pricePerTokenUSDC * tokenAmount / 1e18;
+        uint256 requiredUSDC = pricePerTokenUSDC * tokenAmount / 1e18 / 1e12; // Convert to 6 decimals
         require(seqToken.balanceOf(address(this)) >= tokenAmount, "Not enough SEQ tokens");
         require(usdc.allowance(msg.sender, address(this)) >= requiredUSDC, "Approve USDC first");
 

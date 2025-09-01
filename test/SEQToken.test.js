@@ -50,11 +50,11 @@ describe("SEQToken Security Tests", function () {
       const totalSupply = ethers.utils.parseEther("100000000");
       
       await expect(
-        SEQToken.deploy(totalSupply, ethers.ZeroAddress, ico.address)
+        SEQToken.deploy(totalSupply, ethers.constants.AddressZero, ico.address)
       ).to.be.revertedWith("Owner address cannot be zero");
       
       await expect(
-        SEQToken.deploy(totalSupply, owner.address, ethers.ZeroAddress)
+        SEQToken.deploy(totalSupply, owner.address, ethers.constants.AddressZero)
       ).to.be.revertedWith("ICO address cannot be zero");
     });
 
@@ -116,7 +116,7 @@ describe("SEQToken Security Tests", function () {
     it("Should not allow minting beyond max supply", async function () {
       const maxSupply = await token.MAX_SUPPLY();
       const currentSupply = await token.totalSupply();
-      const remainingSupply = maxSupply - currentSupply;
+      const remainingSupply = maxSupply.sub(currentSupply);
       
       // Should be able to mint up to max supply (by owner)
       await token.connect(owner).mint(addr1.address, remainingSupply);
@@ -173,7 +173,7 @@ describe("SEQToken Security Tests", function () {
       
       await token.connect(owner).renounceOwnership();
       
-      expect(await token.owner()).to.equal(ethers.ZeroAddress);
+      expect(await token.owner()).to.equal(ethers.constants.AddressZero);
     });
 
     it("Should not allow minting after ownership is renounced", async function () {
@@ -214,14 +214,14 @@ describe("SEQToken Security Tests", function () {
       
       // Deploy a malicious contract that attempts reentrancy
       const MaliciousContract = await ethers.getContractFactory("MaliciousReentrancy");
-      const malicious = await MaliciousContract.deploy(await token.getAddress());
+      const malicious = await MaliciousContract.deploy(token.address);
       
       // Send tokens to malicious contract (owner has tokens)
-      await token.connect(owner).transfer(await malicious.getAddress(), amount);
+      await token.connect(owner).transfer(malicious.address, amount);
       
       // The malicious contract should not be able to perform reentrancy
       // This test passes if no revert occurs from reentrancy guard
-      expect(await token.balanceOf(await malicious.getAddress())).to.equal(amount);
+      expect(await token.balanceOf(malicious.address)).to.equal(amount);
     });
   });
 

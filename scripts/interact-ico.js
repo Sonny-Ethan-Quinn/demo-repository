@@ -4,20 +4,51 @@
 const { ethers } = require("hardhat");
 
 async function main() {
-  // Replace with your deployed contract addresses
-  const SEQICO_ADDRESS = "0x..."; // Replace with actual SEQICO address
-  const USDT_ADDRESS = "0x...";   // Replace with actual USDT address
-  const USDC_ADDRESS = "0x...";   // Replace with actual USDC address
-
+  console.log("=== SEQ ICO Interaction Script ===\n");
+  
   // Get signers
   const [buyer] = await ethers.getSigners();
   console.log("Buyer address:", buyer.address);
   console.log("Buyer ETH balance:", ethers.utils.formatEther(await buyer.getBalance()));
 
-  // Get contract instances
-  const seqico = await ethers.getContractAt("SEQICO", SEQICO_ADDRESS);
-  const seqToken = await ethers.getContractAt("SEQToken", await seqico.seqToken());
+  // For demonstration, deploy contracts (in production, use actual addresses)
+  console.log("\n=== Deploying Contracts for Demo ===");
   
+  // Deploy SEQ Token
+  const SEQToken = await ethers.getContractFactory("SEQToken");
+  const seqToken = await SEQToken.deploy(
+    ethers.utils.parseEther("1000000"), // 1M tokens
+    buyer.address, // owner
+    buyer.address  // ICO address (buyer will hold ICO tokens)
+  );
+  console.log("SEQ Token deployed to:", seqToken.address);
+
+  // Deploy Mock USDT and USDC
+  const MockUSDT = await ethers.getContractFactory("MockUSDT");
+  const MockUSDC = await ethers.getContractFactory("MockUSDC");
+  
+  const usdt = await MockUSDT.deploy();
+  const usdc = await MockUSDC.deploy();
+  console.log("Mock USDT deployed to:", usdt.address);
+  console.log("Mock USDC deployed to:", usdc.address);
+
+  // Deploy SEQICO
+  const SEQICO = await ethers.getContractFactory("SEQICO");
+  const seqico = await SEQICO.deploy(
+    seqToken.address,
+    usdt.address,
+    usdc.address,
+    ethers.utils.parseEther("0.001"), // 0.001 ETH per token
+    ethers.utils.parseEther("1"),     // $1 per token (USDT)
+    ethers.utils.parseEther("1")      // $1 per token (USDC)
+  );
+  console.log("SEQICO deployed to:", seqico.address);
+
+  // Transfer tokens to ICO contract for sale
+  const tokensForSale = ethers.utils.parseEther("500000");
+  await seqToken.transfer(seqico.address, tokensForSale);
+  console.log(`Transferred ${ethers.utils.formatEther(tokensForSale)} SEQ tokens to ICO`);
+
   console.log("\n=== ICO Contract Information ===");
   console.log("SEQICO Address:", seqico.address);
   console.log("SEQ Token Address:", await seqico.seqToken());
@@ -41,9 +72,8 @@ async function main() {
   const initialSEQBalance = await seqToken.balanceOf(buyer.address);
   console.log("Initial SEQ balance:", ethers.utils.formatEther(initialSEQBalance));
 
-  // Execute purchase (uncomment to actually execute)
-  /*
-  console.log("Executing purchase...");
+  // Execute purchase
+  console.log("\nExecuting ETH purchase...");
   const tx = await seqico.buyWithETH(tokenAmount, { value: requiredETH });
   await tx.wait();
   console.log("Purchase completed! Transaction hash:", tx.hash);
@@ -51,23 +81,40 @@ async function main() {
   const finalSEQBalance = await seqToken.balanceOf(buyer.address);
   console.log("Final SEQ balance:", ethers.utils.formatEther(finalSEQBalance));
   console.log("Tokens received:", ethers.utils.formatEther(finalSEQBalance.sub(initialSEQBalance)));
-  */
 
-  // Example: USDT Purchase setup
-  console.log("\n=== Example USDT Purchase Setup ===");
-  console.log("For USDT purchases:");
-  console.log("1. Get USDT tokens from exchange or faucet");
-  console.log("2. Approve SEQICO contract to spend your USDT:");
-  console.log(`   usdt.approve("${seqico.address}", amount)`);
-  console.log("3. Call buyWithUSDT(tokenAmount)");
+  // Example: USDT Purchase
+  console.log("\n=== USDT Purchase Example ===");
+  const usdtTokenAmount = ethers.utils.parseEther("100"); // Buy 100 SEQ with USDT
+  const requiredUSDT = await seqico.pricePerTokenUSDT();
+  const requiredUSDTForPurchase = requiredUSDT.mul(usdtTokenAmount).div(ethers.utils.parseEther("1")).div(10**12);
   
-  // Example: USDC Purchase setup
-  console.log("\n=== Example USDC Purchase Setup ===");
-  console.log("For USDC purchases:");
-  console.log("1. Get USDC tokens from exchange or faucet");
-  console.log("2. Approve SEQICO contract to spend your USDC:");
-  console.log(`   usdc.approve("${seqico.address}", amount)`);
-  console.log("3. Call buyWithUSDC(tokenAmount)");
+  console.log("USDT required:", requiredUSDTForPurchase.toString(), "USDT (6 decimals)");
+  
+  // Approve and purchase with USDT
+  console.log("Approving USDT...");
+  await usdt.approve(seqico.address, requiredUSDTForPurchase);
+  
+  console.log("Executing USDT purchase...");
+  const usdtTx = await seqico.buyWithUSDT(usdtTokenAmount);
+  await usdtTx.wait();
+  console.log("USDT purchase completed! Transaction hash:", usdtTx.hash);
+  
+  // Example: USDC Purchase  
+  console.log("\n=== USDC Purchase Example ===");
+  const usdcTokenAmount = ethers.utils.parseEther("50"); // Buy 50 SEQ with USDC
+  const requiredUSDC = await seqico.pricePerTokenUSDC();
+  const requiredUSDCForPurchase = requiredUSDC.mul(usdcTokenAmount).div(ethers.utils.parseEther("1")).div(10**12);
+  
+  console.log("USDC required:", requiredUSDCForPurchase.toString(), "USDC (6 decimals)");
+  
+  // Approve and purchase with USDC
+  console.log("Approving USDC...");
+  await usdc.approve(seqico.address, requiredUSDCForPurchase);
+  
+  console.log("Executing USDC purchase...");
+  const usdcTx = await seqico.buyWithUSDC(usdcTokenAmount);
+  await usdcTx.wait();
+  console.log("USDC purchase completed! Transaction hash:", usdcTx.hash);
 
   // Security verification
   console.log("\n=== Security Verification ===");

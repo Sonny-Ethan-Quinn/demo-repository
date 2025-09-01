@@ -16,10 +16,13 @@ describe("SEQICO Contract Tests", function () {
 
     // Deploy SEQ Token
     SEQToken = await ethers.getContractFactory("SEQToken");
-    seqToken = await SEQToken.deploy(ethers.utils.parseEther("1000000")); // 1M SEQ tokens
+    seqToken = await SEQToken.deploy(
+      ethers.utils.parseEther("1000000"), // 1M SEQ tokens total supply
+      owner.address, // owner gets 10%
+      owner.address  // for testing, owner gets the ICO tokens too
+    );
 
     // Deploy Mock USDT and USDC
-    const MockTokens = await ethers.getContractFactory("MockTokens");
     MockUSDT = await ethers.getContractFactory("MockUSDT");
     MockUSDC = await ethers.getContractFactory("MockUSDC");
     
@@ -193,14 +196,22 @@ describe("SEQICO Contract Tests", function () {
 
   describe("Owner Functions", function () {
     it("Should allow owner to update SEQ token address", async function () {
-      const newSEQToken = await SEQToken.deploy(ethers.utils.parseEther("1000"));
+      const newSEQToken = await SEQToken.deploy(
+        ethers.utils.parseEther("1000"),
+        owner.address,
+        owner.address
+      );
       
       await seqico.setSEQToken(newSEQToken.address);
       expect(await seqico.seqToken()).to.equal(newSEQToken.address);
     });
 
     it("Should not allow non-owner to update SEQ token address", async function () {
-      const newSEQToken = await SEQToken.deploy(ethers.utils.parseEther("1000"));
+      const newSEQToken = await SEQToken.deploy(
+        ethers.utils.parseEther("1000"),
+        owner.address,
+        owner.address
+      );
       
       await expect(
         seqico.connect(buyer1).setSEQToken(newSEQToken.address)
