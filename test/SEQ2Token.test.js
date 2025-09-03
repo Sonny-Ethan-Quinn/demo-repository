@@ -44,7 +44,7 @@ describe("SEQ2Token", function () {
       await expect(
         SEQ2Token.deploy(
           ethers.utils.parseEther("1000000"),
-          ethers.constants.AddressZero
+          ethers.ZeroAddress
         )
       ).to.be.revertedWith("Owner address cannot be zero");
     });
