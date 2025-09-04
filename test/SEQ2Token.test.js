@@ -17,7 +17,7 @@ describe("SEQ2Token", function () {
     SEQ2Token = await ethers.getContractFactory("SEQ2Token");
     const initialSupply = ethers.utils.parseEther("1000000"); // 1 million tokens
     seq2Token = await SEQ2Token.deploy(initialSupply, owner.address);
-    await seq2Token.waitForDeployment();
+    await seq2Token.deployed();
   });
 
   describe("Deployment", function () {
@@ -44,7 +44,7 @@ describe("SEQ2Token", function () {
       await expect(
         SEQ2Token.deploy(
           ethers.utils.parseEther("1000000"),
-          ethers.ZeroAddress
+          ethers.constants.AddressZero
         )
       ).to.be.revertedWith("Owner address cannot be zero");
     });

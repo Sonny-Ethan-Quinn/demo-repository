@@ -16,10 +16,10 @@ describe("SEQICO Contract Tests", function () {
 
     // Deploy SEQ Token
     SEQToken = await ethers.getContractFactory("SEQToken");
-    seqToken = await SEQToken.deploy(ethers.utils.parseEther("1000000")); // 1M SEQ tokens
+    const totalSupply = ethers.utils.parseEther("1000000"); // 1M SEQ tokens
+    seqToken = await SEQToken.deploy(totalSupply, owner.address, owner.address); // owner gets both owner and ico allocation
 
     // Deploy Mock USDT and USDC
-    const MockTokens = await ethers.getContractFactory("MockTokens");
     MockUSDT = await ethers.getContractFactory("MockUSDT");
     MockUSDC = await ethers.getContractFactory("MockUSDC");
     
