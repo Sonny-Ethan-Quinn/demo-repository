@@ -30,8 +30,8 @@ contract SEQ2Token is ERC20, Ownable, ReentrancyGuard, Pausable {
     
     // ============= Constants =============
     
-    /// @dev Maximum supply is fixed at 1 billion tokens
-    uint256 public constant MAX_SUPPLY = 1_000_000_000 * 10**18;
+    /// @dev Maximum supply is fixed at 750,000 tokens
+    uint256 public constant MAX_SUPPLY = 750_000 * 10**18;
     
     /// @dev Initial price in USD cents (380 = $3.80)
     uint256 public constant INITIAL_PRICE_USD_CENTS = 380;

@@ -15,9 +15,9 @@ describe("SEQ2Token", function () {
 
     // Deploy SEQ2Token contract
     SEQ2Token = await ethers.getContractFactory("SEQ2Token");
-    const initialSupply = ethers.utils.parseEther("1000000"); // 1 million tokens
+    const initialSupply = ethers.utils.parseEther("500000"); // 500,000 tokens (within 750,000 max)
     seq2Token = await SEQ2Token.deploy(initialSupply, owner.address);
-    await seq2Token.waitForDeployment();
+    await seq2Token.deployed();
   });
 
   describe("Deployment", function () {
@@ -30,27 +30,27 @@ describe("SEQ2Token", function () {
     });
 
     it("Should mint initial supply to owner", async function () {
-      const initialSupply = ethers.utils.parseEther("1000000");
+      const initialSupply = ethers.utils.parseEther("500000");
       expect(await seq2Token.totalSupply()).to.equal(initialSupply);
       expect(await seq2Token.balanceOf(owner.address)).to.equal(initialSupply);
     });
 
     it("Should have correct max supply", async function () {
       const maxSupply = await seq2Token.MAX_SUPPLY();
-      expect(maxSupply).to.equal(ethers.utils.parseEther("1000000000")); // 1 billion
+      expect(maxSupply).to.equal(ethers.utils.parseEther("750000")); // 750,000
     });
 
     it("Should reject deployment with zero owner address", async function () {
       await expect(
         SEQ2Token.deploy(
-          ethers.utils.parseEther("1000000"),
-          ethers.ZeroAddress
+          ethers.utils.parseEther("500000"),
+          ethers.constants.AddressZero
         )
       ).to.be.revertedWith("Owner address cannot be zero");
     });
 
     it("Should reject deployment with supply exceeding max", async function () {
-      const tooMuchSupply = ethers.utils.parseEther("2000000000"); // 2 billion
+      const tooMuchSupply = ethers.utils.parseEther("800000"); // 800,000 (exceeds 750,000 max)
       await expect(
         SEQ2Token.deploy(tooMuchSupply, owner.address)
       ).to.be.revertedWith("Initial supply exceeds maximum");
