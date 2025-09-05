@@ -1,76 +1,110 @@
-const { ethers, network } = require("hardhat");
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
 
-async function main() {
-  console.log("🚀 Deploying SEQ Token...");
+describe("SEQToken Deployment", function () {
+  let SEQToken;
+  let seqToken;
+  let owner;
+  let icoAddress;
+  let addr1;
+  let addr2;
 
-  // Get the contract factory
-  const SEQToken = await ethers.getContractFactory("SEQToken");
+  const TOTAL_SUPPLY = ethers.utils.parseEther("750000"); // 750,000 tokens
+  const EXPECTED_TOTAL_SUPPLY = ethers.utils.parseEther("750000");
+  const EXPECTED_OWNER_AMOUNT = ethers.utils.parseEther("75000"); // 10% of 750,000
+  const EXPECTED_ICO_AMOUNT = ethers.utils.parseEther("675000"); // 90% of 750,000
 
-  // Deployment parameters
-  const totalSupply = ethers.utils.parseEther("750000"); // 750,000 tokens
-  const owner = "0xf6b6F31737f8c42ebA6Ed06E624F08aC5a4e0FC0";
-  const ico = "0xf6b6F31737f8c42ebA6Ed06E624F08aC5a4e0FC0";
-
-  console.log("📋 Deployment Configuration:");
-  console.log(`Total Supply: ${ethers.utils.formatEther(totalSupply)} SEQ`);
-  console.log(`Owner Address: ${owner} (receives 10%)`);
-  console.log(`ICO Address: ${ico} (receives 90%)`);
-  
-  if (owner === ico) {
-    console.log("⚠️  Note: Owner and ICO addresses are the same, so one address will receive 100% of tokens");
-  }
-
-  // Deploy the contract
-  console.log("\n⏳ Deploying contract...");
-  const seqToken = await SEQToken.deploy(totalSupply, owner, ico);
-  await seqToken.deployed();
-
-  console.log("\n✅ SEQ Token deployed successfully!");
-  console.log(`📍 Contract Address: ${seqToken.address}`);
-
-  // Verify deployment
-  console.log("\n🔍 Verifying deployment...");
-  
-  const deployedTotalSupply = await seqToken.totalSupply();
-  const tokenName = await seqToken.name();
-  const tokenSymbol = await seqToken.symbol();
-  const ownerBalance = await seqToken.balanceOf(owner);
-  const icoBalance = await seqToken.balanceOf(ico);
-  const contractOwner = await seqToken.owner();
-
-  console.log(`✅ Token Name: ${tokenName}`);
-  console.log(`✅ Token Symbol: ${tokenSymbol}`);
-  console.log(`✅ Total Supply: ${ethers.utils.formatEther(deployedTotalSupply)} SEQ`);
-  const ownerPct = (parseFloat(ethers.utils.formatEther(ownerBalance)) / parseFloat(ethers.utils.formatEther(deployedTotalSupply)) * 100).toFixed(2);
-  const icoPct = (parseFloat(ethers.utils.formatEther(icoBalance)) / parseFloat(ethers.utils.formatEther(deployedTotalSupply)) * 100).toFixed(2);
-  console.log(`✅ Owner Balance: ${ethers.utils.formatEther(ownerBalance)} SEQ (${ownerPct}%)`);
-  console.log(`✅ ICO Balance: ${ethers.utils.formatEther(icoBalance)} SEQ (${icoPct}%)`);
-  console.log(`✅ Contract Owner: ${contractOwner}`);
-
-  // Security status check
-  if (typeof seqToken.verifyNotHoneypot === "function") {
-    console.log("\n🛡️  Security Status:");
-    const [isSecure, reason] = await seqToken.verifyNotHoneypot();
-    console.log(`Status: ${isSecure ? "✅ Secure" : "⚠️  Not fully secure"}`);
-    console.log(`Reason: ${reason}`);
-  }
-
-  console.log("\n🎯 Next Steps:");
-  console.log("1. Verify contract on block explorer");
-  console.log("2. Test token transfers");
-  console.log("3. For full decentralization, call:");
-  console.log("   - seqToken.disableMinting()");
-  console.log("   - seqToken.renounceOwnership()");
-
-  if (network.name !== "hardhat" && network.name !== "localhost") {
-    console.log("\n📋 Contract verification command:");
-    console.log(`npx hardhat verify --network ${network.name} ${seqToken.address} "${totalSupply}" "${owner}" "${ico}"`);
-  }
-}
-
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error("❌ Deployment failed:", error);
-    process.exit(1);
+  beforeEach(async function () {
+    // Get signers
+    [owner, icoAddress, addr1, addr2] = await ethers.getSigners();
+    
+    // Get the contract factory
+    SEQToken = await ethers.getContractFactory("SEQToken");
   });
+
+  describe("Deployment with different addresses", function () {
+    beforeEach(async function () {
+      // Deploy with different owner and ICO addresses
+      seqToken = await SEQToken.deploy(TOTAL_SUPPLY, owner.address, icoAddress.address);
+      await seqToken.deployed();
+    });
+
+    it("Should deploy with correct total supply of 750,000 tokens", async function () {
+      const deployedTotalSupply = await seqToken.totalSupply();
+      expect(deployedTotalSupply).to.equal(EXPECTED_TOTAL_SUPPLY);
+    });
+
+    it("Should distribute 10% (75,000 tokens) to owner address", async function () {
+      const ownerBalance = await seqToken.balanceOf(owner.address);
+      expect(ownerBalance).to.equal(EXPECTED_OWNER_AMOUNT);
+    });
+
+    it("Should distribute 90% (675,000 tokens) to ICO address", async function () {
+      const icoBalance = await seqToken.balanceOf(icoAddress.address);
+      expect(icoBalance).to.equal(EXPECTED_ICO_AMOUNT);
+    });
+
+    it("Should validate 10%/90% distribution percentages", async function () {
+      const deployedTotalSupply = await seqToken.totalSupply();
+      const ownerBalance = await seqToken.balanceOf(owner.address);
+      const icoBalance = await seqToken.balanceOf(icoAddress.address);
+
+      // Calculate percentages
+      const ownerPct = (parseFloat(ethers.utils.formatEther(ownerBalance)) / parseFloat(ethers.utils.formatEther(deployedTotalSupply)) * 100);
+      const icoPct = (parseFloat(ethers.utils.formatEther(icoBalance)) / parseFloat(ethers.utils.formatEther(deployedTotalSupply)) * 100);
+
+      expect(ownerPct).to.be.closeTo(10, 0.01); // 10% ± 0.01%
+      expect(icoPct).to.be.closeTo(90, 0.01); // 90% ± 0.01%
+    });
+
+    it("Should ensure total distribution equals total supply", async function () {
+      const deployedTotalSupply = await seqToken.totalSupply();
+      const ownerBalance = await seqToken.balanceOf(owner.address);
+      const icoBalance = await seqToken.balanceOf(icoAddress.address);
+
+      expect(ownerBalance.add(icoBalance)).to.equal(deployedTotalSupply);
+      expect(ownerBalance.add(icoBalance)).to.equal(EXPECTED_TOTAL_SUPPLY);
+    });
+
+    it("Should have correct token name and symbol", async function () {
+      expect(await seqToken.name()).to.equal("SEQ Token");
+      expect(await seqToken.symbol()).to.equal("SEQ");
+    });
+
+    it("Should set contract owner correctly", async function () {
+      expect(await seqToken.owner()).to.equal(owner.address);
+    });
+  });
+
+  describe("Deployment with same address for owner and ICO", function () {
+    beforeEach(async function () {
+      // Deploy with same address for both owner and ICO (like in original deployment script)
+      seqToken = await SEQToken.deploy(TOTAL_SUPPLY, owner.address, owner.address);
+      await seqToken.deployed();
+    });
+
+    it("Should distribute all 750,000 tokens to the single address", async function () {
+      const ownerBalance = await seqToken.balanceOf(owner.address);
+      expect(ownerBalance).to.equal(EXPECTED_TOTAL_SUPPLY);
+    });
+
+    it("Should still maintain total supply of 750,000 tokens", async function () {
+      const deployedTotalSupply = await seqToken.totalSupply();
+      expect(deployedTotalSupply).to.equal(EXPECTED_TOTAL_SUPPLY);
+    });
+  });
+
+  describe("Security validation", function () {
+    beforeEach(async function () {
+      seqToken = await SEQToken.deploy(TOTAL_SUPPLY, owner.address, icoAddress.address);
+      await seqToken.deployed();
+    });
+
+    it("Should have security verification function", async function () {
+      const [isSecure, reason] = await seqToken.verifyNotHoneypot();
+      expect(typeof isSecure).to.equal("boolean");
+      expect(typeof reason).to.equal("string");
+      expect(reason).to.include("Owner can still mint tokens");
+    });
+  });
+});
