@@ -15,9 +15,9 @@ describe("SEQ2Token", function () {
 
     // Deploy SEQ2Token contract
     SEQ2Token = await ethers.getContractFactory("SEQ2Token");
-    const initialSupply = ethers.utils.parseEther("1000000"); // 1 million tokens
+    const initialSupply = ethers.utils.parseEther("100000000"); // 100 million tokens
     seq2Token = await SEQ2Token.deploy(initialSupply, owner.address);
-    await seq2Token.waitForDeployment();
+    await seq2Token.deployed();
   });
 
   describe("Deployment", function () {
@@ -30,7 +30,7 @@ describe("SEQ2Token", function () {
     });
 
     it("Should mint initial supply to owner", async function () {
-      const initialSupply = ethers.utils.parseEther("1000000");
+      const initialSupply = ethers.utils.parseEther("100000000");
       expect(await seq2Token.totalSupply()).to.equal(initialSupply);
       expect(await seq2Token.balanceOf(owner.address)).to.equal(initialSupply);
     });
@@ -43,8 +43,8 @@ describe("SEQ2Token", function () {
     it("Should reject deployment with zero owner address", async function () {
       await expect(
         SEQ2Token.deploy(
-          ethers.utils.parseEther("1000000"),
-          ethers.ZeroAddress
+          ethers.utils.parseEther("100000000"),
+          ethers.constants.AddressZero
         )
       ).to.be.revertedWith("Owner address cannot be zero");
     });
