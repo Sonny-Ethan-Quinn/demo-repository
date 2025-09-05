@@ -10,7 +10,7 @@ This repository contains the secure SEQ token implementation designed to prevent
 - **Problem**: Many honeypot tokens have hidden minting functions that only the owner can access, allowing unlimited token creation.
 - **Solution**: Our SEQ token has a transparent `mint()` function with clear restrictions:
   - Only callable by owner
-  - Cannot exceed MAX_SUPPLY (1 billion tokens)
+  - Cannot exceed MAX_SUPPLY (750,000 tokens)
   - Can be permanently disabled via `disableMinting()`
 
 ### 2. **Transfer Restrictions**
@@ -84,7 +84,7 @@ npx hardhat test
 <<<<<< copilot/fix-475d5eb4-e41b-4d24-b1e9-cf688310fe92
 The SEQ Token requires three parameters for deployment:
 
-1. **totalSupply**: Total number of tokens to create (500,000)
+1. **totalSupply**: Total number of tokens to create (750,000)
 2. **owner**: 0xf6b6F31737f8c42ebA6Ed06E624F08aC5a4e0FC0
 3. **ico**: Address to receive 90% of tokens
 
