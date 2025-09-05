@@ -10,7 +10,8 @@ async function main() {
   // Deploy SEQ Token first (or use existing address)
   console.log("Deploying SEQ Token...");
   const initialSupply = ethers.utils.parseEther("1000000"); // 1M SEQ tokens
-  const seqToken = await SEQToken.deploy(initialSupply);
+  const [deployer] = await ethers.getSigners();
+  const seqToken = await SEQToken.deploy(initialSupply, deployer.address, ethers.constants.AddressZero);
   await seqToken.deployed();
   console.log("SEQ Token deployed to:", seqToken.address);
 

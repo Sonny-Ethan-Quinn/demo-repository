@@ -12,8 +12,8 @@ jobs:
       pull-requests: write
     steps:
     - name: 'Auto-assign issue'
-      uses: pozil/auto-assign-issue@v1
+      uses: pozil/auto-assign-issue@<commit-SHA>
       with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          assignees: sonnyquinn24
-          numOfAssignee: 1
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        assignees: sonnyquinn24
+        numOfAssignee: 1
