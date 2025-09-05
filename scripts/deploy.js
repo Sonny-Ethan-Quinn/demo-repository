@@ -2,9 +2,9 @@
  * SEQ Token Deployment Script
  * 
  * This script deploys the SEQ Token with the following configuration:
- * - Total Supply: 750,000 SEQ tokens
+ * - Total Supply: 1,000,000 SEQ tokens
  * - ICO Token Price: $2.78 per SEQ token
- * - Token Distribution: 10% to owner (75,000 SEQ), 90% to ICO (675,000 SEQ)
+ * - Token Distribution: 10% to owner (100,000 SEQ), 90% to ICO (900,000 SEQ)
  * - Both owner and ICO use the same address for initial setup
  */
 
@@ -14,7 +14,7 @@ async function main() {
   console.log("=== SEQ Token Deployment ===\n");
 
   // ICO Configuration
-  const TOTAL_SUPPLY = "750000"; // 750,000 SEQ tokens
+  const TOTAL_SUPPLY = "1000000"; // 1,000,000 SEQ tokens
   const ICO_PRICE_USD = 2.78; // $2.78 per SEQ token
   
   // Owner and ICO recipient address
