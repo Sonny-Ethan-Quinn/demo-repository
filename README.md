@@ -1,6 +1,5 @@
 # Welcome to your organization's demo repository
 This code repository (or "repo") is designed to demonstrate the best GitHub has to offer with the least amount of noise.
-=======
 
 # SEQ Token - Secure DeFi Token for Base Blockchain
 
