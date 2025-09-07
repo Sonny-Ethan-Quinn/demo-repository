@@ -61,6 +61,10 @@ This repository contains the secure SEQ token implementation designed to prevent
 
 ## Deployment Instructions
 
+**Owner and ICO recipient wallet address example:**
+- Owner: `0xf6b6F31737f8c42ebA6Ed06E624F08aC5a4e0FC0`
+- ICO recipient: `0xf6b6F31737f8c42ebA6Ed06E624F08aC5a4e0FC0`
+
 ### Prerequisites
 ```bash
 npm install
@@ -77,34 +81,13 @@ npx hardhat test
 ```
 
 ### Deploy to Base Network
-1. Add your private key to environment variables
-2. Uncomment and configure the Base network in `hardhat.config.js`
-3. Deploy with:
-```bash
-npx hardhat run scripts/deploy.js --network base
-```
+<<<<<< copilot/fix-475d5eb4-e41b-4d24-b1e9-cf688310fe92
+The SEQ Token requires three parameters for deployment:
 
-## Verification Commands
+1. **totalSupply**: Total number of tokens to create (500,000)
+2. **owner**: 0xf6b6F31737f8c42ebA6Ed06E624F08aC5a4e0FC0
+3. **ico**: Address to receive 90% of tokens
 
-### Check if Token is Secure
-```javascript
-const [isSecure, reason] = await token.verifyNotHoneypot();
-console.log(`Secure: ${isSecure}, Reason: ${reason}`);
-```
-
-### Verify No Transfer Restrictions
-```javascript
-const canTransfer = await token.canTransfer(userAddress);
-const transferTax = await token.getTransferTax();
-console.log(`Can transfer: ${canTransfer}, Tax: ${transferTax}%`);
-```
-
-## Gas Optimization
-
-The contract is optimized for gas efficiency while maintaining security:
-- Uses OpenZeppelin's battle-tested implementations
-- Minimal custom logic to reduce attack surface
-- Efficient storage layout
 
 ## Audit Results
 
@@ -114,8 +97,5 @@ The contract is optimized for gas efficiency while maintaining security:
 ✅ **No ownership backdoors**  
 ✅ **Reentrancy protection enabled**  
 ✅ **Transparent and verifiable functions**  
-✅ **Path to full decentralization available**
-
-## Disclaimer
-
-This token implementation prioritizes security and transparency. Users should always verify contract code on block explorers before interacting with any token contract.
+✅ **Path to full decentralization availab
+This token implementation prioritizes security and transparency. Users should always verify contract code on block explorers

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -19,7 +19,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
  */
 contract SEQToken is ERC20, Ownable, ReentrancyGuard {
     // Maximum supply is fixed and cannot be changed
-    uint256 public constant MAX_SUPPLY = 1_000_000_000 * 10**18; // 1 billion tokens
+    uint256 public constant MAX_SUPPLY = 1_000_000 * 10**18; // 1,000,000 tokens
     
     // Flag to indicate if minting is permanently disabled
     bool public mintingDisabled = false;
@@ -29,12 +29,28 @@ contract SEQToken is ERC20, Ownable, ReentrancyGuard {
     event OwnershipRenounced();
     
     /**
-     * @dev Constructor that mints initial supply to deployer
-     * @param initialSupply The initial supply to mint (must not exceed MAX_SUPPLY)
+     * @dev Constructor that distributes tokens between owner and ICO addresses
+     * @param totalSupply The total supply to mint (must not exceed MAX_SUPPLY)
+     * @param owner Address to receive 10% of tokens
+     * @param ico Address to receive 90% of tokens
      */
-    constructor(uint256 initialSupply) ERC20("SEQ Token", "SEQ") {
-        require(initialSupply <= MAX_SUPPLY, "Initial supply exceeds maximum");
-        _mint(msg.sender, initialSupply);
+    constructor(
+        uint256 totalSupply,
+        address owner,
+        address ico
+    ) ERC20("SEQ Token", "SEQ") {
+        require(totalSupply <= MAX_SUPPLY, "Total supply exceeds maximum");
+        require(owner != address(0), "Owner address cannot be zero");
+        require(ico != address(0), "ICO address cannot be zero");
+        
+        uint256 ownerAmount = (totalSupply * 10) / 100; // 10%
+        uint256 icoAmount = totalSupply - ownerAmount;  // 90%
+        
+        _mint(owner, ownerAmount);
+        _mint(ico, icoAmount);
+        
+        // Transfer ownership to the specified owner address
+        _transferOwnership(owner);
     }
     
     /**

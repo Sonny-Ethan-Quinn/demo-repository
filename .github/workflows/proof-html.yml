@@ -1,12 +1,16 @@
 name: Proof HTML
+
 on:
   push:
   workflow_dispatch:
 
 jobs:
-  build:
+  proof:
     runs-on: ubuntu-latest
     steps:
-      - uses: anishathalye/proof-html@c8e53e4d5b3b9a4c9b1b7a4b7e9f9a7d8e6a1c2e
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Run Proof HTML
+        uses: anishathalye/proof-html@c8e53e4d5b3b9a4c9b1b7a4b7e9f9a7d8e6a1c2e
         with:
           directory: ./
