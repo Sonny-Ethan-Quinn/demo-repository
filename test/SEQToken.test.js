@@ -7,7 +7,7 @@ async function main() {
   const SEQToken = await ethers.getContractFactory("SEQToken");
 
   // Deployment parameters
-  const totalSupply = ethers.utils.parseEther("750000"); // 750,000 tokens
+  const totalSupply = ethers.utils.parseEther("1000000"); // 1,000,000 tokens
   const owner = "0xf6b6F31737f8c42ebA6Ed06E624F08aC5a4e0FC0";
   const ico = "0xf6b6F31737f8c42ebA6Ed06E624F08aC5a4e0FC0";
 

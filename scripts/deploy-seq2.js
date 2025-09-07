@@ -12,7 +12,7 @@ async function main() {
   console.log("Account balance:", ethers.utils.formatEther(await deployer.getBalance()), "ETH");
   
   // Deployment parameters
-  const initialSupply = ethers.utils.parseEther("100000000"); // 100 million tokens
+  const initialSupply = ethers.utils.parseEther("500000"); // 500,000 tokens (within 750,000 max)
   const ownerAddress = deployer.address; // Owner will be the deployer
   
   console.log("\n=== Deployment Parameters ===");

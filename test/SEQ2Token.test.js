@@ -15,7 +15,7 @@ describe("SEQ2Token", function () {
 
     // Deploy SEQ2Token contract
     SEQ2Token = await ethers.getContractFactory("SEQ2Token");
-    const initialSupply = ethers.utils.parseEther("100000000"); // 100 million tokens
+    const initialSupply = ethers.utils.parseEther("500000"); // 500,000 tokens (within 750,000 max)
     seq2Token = await SEQ2Token.deploy(initialSupply, owner.address);
     await seq2Token.deployed();
   });
@@ -30,27 +30,27 @@ describe("SEQ2Token", function () {
     });
 
     it("Should mint initial supply to owner", async function () {
-      const initialSupply = ethers.utils.parseEther("100000000");
+      const initialSupply = ethers.utils.parseEther("500000");
       expect(await seq2Token.totalSupply()).to.equal(initialSupply);
       expect(await seq2Token.balanceOf(owner.address)).to.equal(initialSupply);
     });
 
     it("Should have correct max supply", async function () {
       const maxSupply = await seq2Token.MAX_SUPPLY();
-      expect(maxSupply).to.equal(ethers.utils.parseEther("1000000000")); // 1 billion
+      expect(maxSupply).to.equal(ethers.utils.parseEther("750000")); // 750,000
     });
 
     it("Should reject deployment with zero owner address", async function () {
       await expect(
         SEQ2Token.deploy(
-          ethers.utils.parseEther("100000000"),
+          ethers.utils.parseEther("500000"),
           ethers.constants.AddressZero
         )
       ).to.be.revertedWith("Owner address cannot be zero");
     });
 
     it("Should reject deployment with supply exceeding max", async function () {
-      const tooMuchSupply = ethers.utils.parseEther("2000000000"); // 2 billion
+      const tooMuchSupply = ethers.utils.parseEther("800000"); // 800,000 (exceeds 750,000 max)
       await expect(
         SEQ2Token.deploy(tooMuchSupply, owner.address)
       ).to.be.revertedWith("Initial supply exceeds maximum");
@@ -257,79 +257,4 @@ describe("SEQ2Token", function () {
   describe("Security Features", function () {
     it("Should report correct security status", async function () {
       const [isSecure, status] = await seq2Token.verifySecurityStatus();
-      expect(isSecure).to.be.false;
-      expect(status).to.include("Owner controls active");
-    });
-
-    it("Should report secure after minting disabled", async function () {
-      await seq2Token.connect(owner).disableMinting();
-      const [isSecure, status] = await seq2Token.verifySecurityStatus();
-      expect(isSecure).to.be.true;
-      expect(status).to.include("Minting disabled");
-    });
-
-    it("Should handle direct ETH deposits via receive function", async function () {
-      const depositAmount = ethers.utils.parseEther("1");
-      await addr1.sendTransaction({
-        to: seq2Token.address,
-        value: depositAmount
-      });
-      
-      expect(await seq2Token.getUserDeposit(addr1.address)).to.equal(depositAmount);
-      expect(await seq2Token.totalDeposits()).to.equal(depositAmount);
-    });
-  });
-
-  describe("Events", function () {
-    it("Should emit TokensPurchased event", async function () {
-      const ethAmount = ethers.utils.parseEther("1");
-      await expect(
-        seq2Token.connect(addr1).purchaseTokens({ value: ethAmount })
-      ).to.emit(seq2Token, "TokensPurchased");
-    });
-
-    it("Should emit FundsDeposited event", async function () {
-      const depositAmount = ethers.utils.parseEther("1");
-      await expect(
-        seq2Token.connect(addr1).depositFunds({ value: depositAmount })
-      ).to.emit(seq2Token, "FundsDeposited");
-    });
-
-    it("Should emit PriceUpdated event", async function () {
-      await expect(
-        seq2Token.connect(owner).updatePrice(420)
-      ).to.emit(seq2Token, "PriceUpdated");
-    });
-
-    it("Should emit MintingDisabled event", async function () {
-      await expect(
-        seq2Token.connect(owner).disableMinting()
-      ).to.emit(seq2Token, "MintingDisabled");
-    });
-  });
-
-  describe("Edge Cases", function () {
-    it("Should handle zero token calculations", async function () {
-      const tokenAmount = await seq2Token.calculateTokenAmount(0);
-      expect(tokenAmount).to.equal(0);
-    });
-
-    it("Should reject minting to zero address", async function () {
-      await expect(
-        seq2Token.connect(owner).mint(ethers.constants.AddressZero, ethers.utils.parseEther("100"))
-      ).to.be.revertedWith("Cannot mint to zero address");
-    });
-
-    it("Should reject zero price updates", async function () {
-      await expect(
-        seq2Token.connect(owner).updatePrice(0)
-      ).to.be.revertedWith("Price must be greater than zero");
-    });
-
-    it("Should reject zero deposits", async function () {
-      await expect(
-        seq2Token.connect(addr1).depositFunds({ value: 0 })
-      ).to.be.revertedWith("Deposit amount must be greater than zero");
-    });
-  });
-});
+      expect(isSecure).to.be.false

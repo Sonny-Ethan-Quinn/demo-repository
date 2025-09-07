@@ -1,9 +1,23 @@
-name: Proof HTML
+name: Auto Assign
+
 on:
-  push:
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened]
   workflow_dispatch:
 
 jobs:
-  build:
+  run:
     runs-on: ubuntu-latest
-    steps
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Auto-assign issue or PR
+        uses: pozil/auto-assign-issue@e5c2c5a5f7e1f2a7fa64d7e5b3bcb5f0a9d6e1e2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          assignees: sonnyquinn24
+          numOfAssignee: 1
