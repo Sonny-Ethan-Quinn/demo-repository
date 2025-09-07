@@ -1,16 +1,22 @@
-name: Proof HTML
+name: Auto Assign
 
 on:
-  push:
-  workflow_dispatch:
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened]
 
 jobs:
-  proof:
+  run:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Run Proof HTML
-        uses: anishathalye/proof-html@c8e53e4d5b3b9a4c9b1b7a4b7e9f9a7d8e6a1c2e
+      - name: Auto-assign issue
+        uses: pozil/auto-assign-issue@e5c2c5a5f7e1f2a7fa64d7e5b3bcb5f0a9d6e1e2
         with:
-          directory: ./
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          assignees: sonnyquinn24
+          numOfAssignee: 1
