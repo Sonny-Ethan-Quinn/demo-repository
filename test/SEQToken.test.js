@@ -49,9 +49,10 @@ describe("SEQToken Deployment", function () {
       const ownerBalance = await seqToken.balanceOf(owner.address);
       const icoBalance = await seqToken.balanceOf(icoAddress.address);
 
-      // Calculate percentages
-      const ownerPct = (parseFloat(ethers.utils.formatEther(ownerBalance)) / parseFloat(ethers.utils.formatEther(deployedTotalSupply)) * 100);
-      const icoPct = (parseFloat(ethers.utils.formatEther(icoBalance)) / parseFloat(ethers.utils.formatEther(deployedTotalSupply)) * 100);
+      // Calculate percentages using BigNumber arithmetic for precision
+      const SCALING_FACTOR = 1e6; // for 6 decimal places of precision
+      const ownerPct = ownerBalance.mul(100 * SCALING_FACTOR).div(deployedTotalSupply).toNumber() / SCALING_FACTOR;
+      const icoPct = icoBalance.mul(100 * SCALING_FACTOR).div(deployedTotalSupply).toNumber() / SCALING_FACTOR;
 
       expect(ownerPct).to.be.closeTo(10, 0.01); // 10% ± 0.01%
       expect(icoPct).to.be.closeTo(90, 0.01); // 90% ± 0.01%
